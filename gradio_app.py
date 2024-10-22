@@ -184,6 +184,19 @@ def post_chat(history):
 
     return canvas_outputs, gr.update(visible=canvas_outputs is not None), gr.update(interactive=len(history) > 0)
 
+def decode_positive_prompts(positive_result, canvas_outputs):
+    decoded_prompts = []
+
+    # Iterate through positive results
+    for i, (mask, cond) in enumerate(positive_result):
+        # Retrieve corresponding prefixes and suffixes from canvas_outputs
+        current_prefixes = canvas_outputs['bag_of_conditions'][i]['prefixes']
+        current_suffixes = canvas_outputs['bag_of_conditions'][i]['suffixes']
+
+        # Combine prefixes and suffixes into a single string
+        full_prompt = " ".join(current_prefixes + current_suffixes).strip()
+        decoded_prompts.append(full_prompt)
+    print(decoded_prompts)
 
 @torch.inference_mode()
 def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_height,
