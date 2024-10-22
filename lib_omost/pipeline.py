@@ -302,6 +302,7 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
 
         for target in targets:
             cond, pooler = double_encode(target)
+            print(pooler)
             conds.append(cond)
             poolers.append(pooler)
 
