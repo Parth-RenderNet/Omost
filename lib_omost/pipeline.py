@@ -323,6 +323,7 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
             current_mask = torch.from_numpy(item['mask']).to(torch.float32)
             current_prefixes = item['prefixes']
             current_suffixes = item['suffixes']
+            print("current prefixes: ", current_prefixes)
 
             current_cond = self.encode_bag_of_subprompts_greedy(prefixes=current_prefixes, suffixes=current_suffixes)
 
@@ -330,28 +331,8 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
                 positive_pooler = current_cond['pooler']
 
             positive_result.append((current_mask, current_cond['cond']))
-            print("Positive pooler is: ")
-            print(self.decode_positive_pooler(positive_pooler))
 
         return positive_result, positive_pooler, negative_result, negative_pooler
-
-    def decode_positive_pooler(self, positive_pooler):
-        # Get the token embeddings from the model's embedding layer (assumes tokenizer_1 is relevant)
-        token_embeddings = self.get_token_embeddings()
-
-        # Compute cosine similarity between positive_pooler and token embeddings
-        similarities = cosine_similarity(positive_pooler.cpu().numpy(), token_embeddings.cpu().numpy())
-
-        top_n = 5
-        top_indices = np.argsort(similarities[0])[::-1][:top_n]  # Sort in descending order of similarity
-
-        # Decode the top N tokens back into strings
-        closest_tokens = [self.tokenizer.decode([idx]) for idx in top_indices]
-
-        return closest_tokens
-
-    def get_token_embeddings(self):
-        return self.text_encoder.get_input_embeddings().weight
 
     @torch.inference_mode()
     def encode_cropped_prompt_77tokens(self, prompt: str):
